@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+import matplotlib.pyplot as plt
 import numpy as np
 from more_itertools.recipes import unique_everseen
 from scipy.spatial import Voronoi, Delaunay
@@ -133,24 +134,80 @@ def polygons_from_map(vor, map_dict):
     poly_countries = []
     poly_continents = []
 
+    # map polygons to countries and continents
+    region_map = dict(Regions=[], SuperRegions=[])
     polys = defaultdict(lambda: defaultdict(list))
+
+    country_id = 1
+    map_dict['country_id'] = np.zeros((vor.points.shape[0], 1), np.int16)
     for idx, pt in enumerate(vor.points):
         region = vor.regions[vor.point_region[idx]]
         continent_idx = map_dict['continent_idx'][idx][0]
         country_idx = map_dict['country_idx'][idx][0]
+
         if continent_idx > 0 and -1 not in region:
             polygon = [vor.vertices[i] for i in region]
             polys[continent_idx][country_idx].append(polygon)
+            map_dict['country_id'][idx] = country_id
+            country_id += 1
 
-    for poly_cont in polys.values():
+    # correctly map the neighbor indices
+    nr_continents = np.max(map_dict['continent_idx'])
+    nr_countries = country_id
+    continent_neighbors = []
+    country_neighbors = [set() for _ in range(nr_countries)]
+    for continent_idx in range(1, nr_continents+1):
+        reg_indices = np.flatnonzero(map_dict['continent_idx'] == continent_idx)
+        cur_continent_neigh = set([])
+        for reg_idx in reg_indices:
+            neigh_indices = map_dict['neighbors'][reg_idx]
+            cur_continent_neigh.update(map_dict['continent_idx'][neigh_indices].flatten())
+            country_neighbors[map_dict['country_id'][reg_idx][0]-1].update(map_dict['country_id'][neigh_indices].flatten())
+
+        continent_neighbors.append(list(cur_continent_neigh))
+
+    map_dict['continent_neighbors'] = continent_neighbors
+    map_dict['country_neighbors'] = [list(s) for s in country_neighbors]
+
+    # convert the small polygons to the bigger country and continent regions
+    country_id = 1
+    for continent_idx, poly_cont in enumerate(polys.values()):
         continent_poly_list = []
         for country_pts in poly_cont.values():
             country_poly = cascaded_union([Polygon(pts) for pts in country_pts])
             poly_countries.append(np.asarray(country_poly.exterior.coords.xy).T.reshape(-1, 2))
 
             continent_poly_list.append(country_poly)
+            neigh = map_dict['country_neighbors'][country_id-1]
+            neigh = list(filter(lambda a: a > 0, neigh))
+            region_map['Regions'].append(dict(
+                id=country_id,
+                superRegion=continent_idx+1,
+                neighbors=neigh
+            ))
 
         continent_poly = cascaded_union(continent_poly_list)
         poly_continents.append(np.asarray(continent_poly.exterior.coords.xy).T.reshape(-1, 2))
 
-    return poly_continents, poly_countries
+        nr_countries = len(continent_poly_list)
+        bonus = min(1, nr_countries + np.random.randint(-1, 1))
+        region_map['SuperRegions'].append(dict(id=continent_idx+1, bonus=bonus))
+
+    return poly_continents, poly_countries, region_map
+
+
+def map_to_json(vor, map_dict):
+    poly_continents, poly_countries, region_map = polygons_from_map(vor, map_dict)
+
+    # add neighbors to the region map
+    cent_countries = [np.mean(p, axis=0) for p in poly_countries]
+    tri = Delaunay(cent_countries)
+    neigh_countries = [find_neighbors(tri, idx)+1 for idx in range(len(cent_countries))]
+
+    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices.copy())
+    plt.plot(tri.points[:, 0], tri.points[:, 1], 'o')
+    for idx, pt in enumerate(cent_countries):
+        text = '{}: {}'.format(idx+1, sorted(neigh_countries[idx]))
+        plt.text(pt[0], pt[1], text)
+    pass
+
