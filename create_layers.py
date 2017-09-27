@@ -9,7 +9,7 @@ from wl2generator.voronoi_graph import VoronoiGraph
 from wl2generator.voronoi_map import create_map, polygons_from_map, map_to_json
 
 
-def create_image(out_path, file_prefix, map_dict, vor, graph_size, padding=100):
+def create_image(out_path, file_prefix, map_dict, vor, graph_size, padding=50):
     # initialize the output path
     out_path = Path(out_path)
     out_path.makedirs_p()
