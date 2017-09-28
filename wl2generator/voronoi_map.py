@@ -230,8 +230,6 @@ def map_to_json(vor, map_dict, visualize=False):
     neigh_countries = [find_neighbors(tri, idx) + 1 for idx in range(len(cent_countries))]
 
     # create the sea bridges
-
-    # compute graph trees
     continent_neigh = map_dict['continent_neighbors']
     adj_mat = neighbors_to_adjacency(continent_neigh)
     g = csgraph.csgraph_from_dense(adj_mat)
@@ -240,6 +238,10 @@ def map_to_json(vor, map_dict, visualize=False):
     country_lut = np.zeros((len(region_map['Regions']), 1), np.int32)
     for idx, reg in enumerate(region_map['Regions']):
         country_lut[idx] = reg['superRegion']-1
+
+    map_dict['sea_bridges'] = np.zeros((nr_comp-1, 2), dtype=np.int)
+    map_dict['country_centroids'] = cent_countries
+    cur_idx = 0
 
     if nr_comp > 1:
         while len(np.unique(labels)) > 1:
@@ -254,6 +256,9 @@ def map_to_json(vor, map_dict, visualize=False):
             # append the neighbors
             region_map['Regions'][r_idx1]['neighbors'].append(r_idx2+1)
             region_map['Regions'][r_idx2]['neighbors'].append(r_idx1+1)
+            map_dict['sea_bridges'][cur_idx, :] = [r_idx1+1, r_idx2+1]
+            cur_idx += 1
+
             # update the connected components
             labels[labels == lbl_idx2] = lbl_idx1
 

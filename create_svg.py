@@ -46,7 +46,7 @@ if __name__ == '__main__':
         print('Map creation took: {:.4f}s'.format(time.time() - ts))
 
         create_plot(map_dict, vor, graph_size)
-        map_to_json(vor, map_dict)
+        map_to_json(vor, map_dict, visualize=True)
         plt.show()
 
 

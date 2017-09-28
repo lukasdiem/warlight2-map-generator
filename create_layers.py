@@ -43,6 +43,18 @@ def create_image(out_path, file_prefix, map_dict, vor, graph_size, padding=50):
     out_file = out_path / file_prefix + '_borders.png'
     cv2.imwrite(out_file, border_image)
 
+    # write out the sea bridges
+    sea_bridge_image = np.zeros(img_size, dtype=np.uint8)
+    bridge_indices = map_dict['sea_bridges']
+    country_centroids = map_dict['country_centroids']
+    pts1 = country_centroids[bridge_indices[:, 0] - 1, :]
+    pts2 = country_centroids[bridge_indices[:, 1] - 1, :]
+    for idx in range(pts1.shape[0]):
+        cv2.line(sea_bridge_image, tuple(pts1[idx, :].astype(np.int)),
+                 tuple(pts2[idx, :].astype(np.int)), color=(255, 255, 255, 255), thickness=4)
+    out_file = out_path / file_prefix + '_sea_bridges.png'
+    cv2.imwrite(out_file, sea_bridge_image)
+
 
 def check_size_type(value):
     val_list = value.lower().split('x')
