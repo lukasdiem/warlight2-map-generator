@@ -12,6 +12,6 @@ accordingly. Code to this can be found at [https://github.com/klejah/hwv.git](ht
 
 Just two demo images to show the output of the generator:
 
-[Demo image of the map generator](https://github.com/lukasdiem/warlight2-map-generator/blob/master/demo1.png "Demo image 1")
+![Demo image of the map generator](https://github.com/lukasdiem/warlight2-map-generator/blob/master/demo1.png "Demo image 1")
 
-[Demo image of the map generator](https://github.com/lukasdiem/warlight2-map-generator/blob/master/demo2.png "Demo image 1")
+![Demo image of the map generator](https://github.com/lukasdiem/warlight2-map-generator/blob/master/demo2.png "Demo image 1")
