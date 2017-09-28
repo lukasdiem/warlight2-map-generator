@@ -201,7 +201,7 @@ def polygons_from_map(vor, map_dict):
         poly_continents.append(np.asarray(continent_poly.exterior.coords.xy).T.reshape(-1, 2))
 
         nr_countries = len(continent_poly_list)
-        bonus = min(1, nr_countries + np.random.randint(-1, 1))
+        bonus = max(1, nr_countries + np.random.randint(-1, 1))
         region_map['SuperRegions'].append(dict(id=continent_idx + 1, bonus=bonus))
 
     return poly_continents, poly_countries, region_map
