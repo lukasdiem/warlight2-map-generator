@@ -42,16 +42,16 @@ if __name__ == '__main__':
         vor = vg.vor
 
         #map_dict = create_map(vg, (2, 8), (10, 15), (20, 70))
-        map_dict = create_map(vg, (2, 4), (3, 8), (20, 70))
+        map_dict = create_map(vg, (3, 6), (3, 8), (20, 70))
         print('Map creation took: {:.4f}s'.format(time.time() - ts))
 
-        map_to_json(vor, map_dict)
         create_plot(map_dict, vor, graph_size)
+        map_to_json(vor, map_dict)
         plt.show()
 
 
-        plt.savefig(out_path / 'map_{:03d}.png'.format(idx), dpi=300, transparent=True,
-                    bbox_inches='tight', pad_inches=0, facecolor=(0, 0.4, 0.55, 0.8))
-        plt.savefig(out_path / 'map_{:03d}.svg'.format(idx), dpi=300, transparent=True,
-                    bbox_inches='tight', pad_inches=0, facecolor=(0, 0.4, 0.55, 0.8))
-        plt.close()
+        # plt.savefig(out_path / 'map_{:03d}.png'.format(idx), dpi=300, transparent=True,
+        #             bbox_inches='tight', pad_inches=0, facecolor=(0, 0.4, 0.55, 0.8))
+        # plt.savefig(out_path / 'map_{:03d}.svg'.format(idx), dpi=300, transparent=True,
+        #             bbox_inches='tight', pad_inches=0, facecolor=(0, 0.4, 0.55, 0.8))
+        # plt.close()
