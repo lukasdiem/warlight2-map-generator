@@ -1,10 +1,12 @@
 import argparse
+import json
 import time
 
 import cv2
 import numpy as np
 from path import Path
 
+from wl2generator.utils import JSONNumpyEncoder
 from wl2generator.voronoi_graph import VoronoiGraph
 from wl2generator.voronoi_map import create_map, polygons_from_map, map_to_json
 
@@ -85,6 +87,8 @@ def parse_input():
 
 def main(params):
     graph_size = params.get('graph_size', (1300, 1000))
+    out_path = Path(params.get('output_path', ''))
+    prefix = params.get('prefix', 'map')
 
     for idx in range(params.get('nr_maps', 1)):
         ts = time.time()
@@ -99,8 +103,12 @@ def main(params):
 
         print('Map creation took: {:.4f}s'.format(time.time() - ts))
 
-        map_to_json(vor, map_dict)
-        create_image(params.get('output_path', ''), params.get('prefix', 'map') + '_{:03d}'.format(idx),
+        json_map = map_to_json(vor, map_dict)
+        json_file = out_path / prefix + '_{:03d}.json'.format(idx)
+        with open(json_file, 'w') as fp:
+            json.dump(json_map, fp, cls=JSONNumpyEncoder)
+
+        create_image(out_path, prefix + '_{:03d}'.format(idx),
                      map_dict, vor, graph_size)
 
 

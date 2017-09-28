@@ -221,7 +221,7 @@ def neighbors_to_adjacency(neighbor_list):
     return mat
 
 
-def map_to_json(vor, map_dict):
+def map_to_json(vor, map_dict, visualize=False):
     poly_continents, poly_countries, region_map = polygons_from_map(vor, map_dict)
 
     # add sea bridges as neighbors to the region map
@@ -257,22 +257,22 @@ def map_to_json(vor, map_dict):
             # update the connected components
             labels[labels == lbl_idx2] = lbl_idx1
 
+    if visualize:
+        cmap = cm.get_cmap('Set3')
+        for reg_idx, region in enumerate(region_map['Regions']):
+            reg_pt = cent_countries[reg_idx, :]
+            neigh_pts = cent_countries[np.asarray(region['neighbors']) - 1, :]
+            nr_neigh = neigh_pts.shape[0]
 
-    cmap = cm.get_cmap('Set3')
-    for reg_idx, region in enumerate(region_map['Regions']):
-        reg_pt = cent_countries[reg_idx, :]
-        neigh_pts = cent_countries[np.asarray(region['neighbors']) - 1, :]
-        nr_neigh = neigh_pts.shape[0]
+            x_coords = np.column_stack((neigh_pts[:, 0], np.repeat(reg_pt[0], nr_neigh, axis=0)))
+            y_coords = np.column_stack((neigh_pts[:, 1], np.repeat(reg_pt[1], nr_neigh, axis=0)))
 
-        x_coords = np.column_stack((neigh_pts[:, 0], np.repeat(reg_pt[0], nr_neigh, axis=0)))
-        y_coords = np.column_stack((neigh_pts[:, 1], np.repeat(reg_pt[1], nr_neigh, axis=0)))
+            plt.plot(x_coords.T, y_coords.T, 'o-', cmap.colors[np.mod(reg_idx, len(cmap.colors))])
 
-        plt.plot(x_coords.T, y_coords.T, 'o-', cmap.colors[np.mod(reg_idx, len(cmap.colors))])
-        pass
+        #plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices.copy())
+        # plt.plot(tri.points[:, 0], tri.points[:, 1], 'o')
+        for idx, pt in enumerate(cent_countries):
+            text = '{}: {}'.format(idx + 1, sorted(region_map['Regions'][idx]['neighbors']))
+            plt.text(pt[0], pt[1], text)
 
-    #plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices.copy())
-    # plt.plot(tri.points[:, 0], tri.points[:, 1], 'o')
-    for idx, pt in enumerate(cent_countries):
-        text = '{}: {}'.format(idx + 1, sorted(region_map['Regions'][idx]['neighbors']))
-        plt.text(pt[0], pt[1], text)
-    pass
+    return region_map
